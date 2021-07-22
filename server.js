@@ -6,7 +6,7 @@ const io = require('socket.io')(http);
 const PORT = process.env.PORT || 9000;
 const peerServer = ExpressPeerServer(http, {
     debug: true,
-    path: '/'
+    path: '/server'
 })
 
 http.listen(PORT, () => {
