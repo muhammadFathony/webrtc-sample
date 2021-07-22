@@ -1,8 +1,13 @@
 const express = require('express');
+const { ExpressPeerServer } = require('peer')
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 9000;
+const peerServer = ExpressPeerServer(http, {
+    debug: true,
+    path: '/'
+})
 
 http.listen(PORT, () => {
     console.log(`listen on port ${PORT}`);

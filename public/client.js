@@ -96,6 +96,7 @@ let peer_id;
 var peer = new Peer();
 // display then peer id on the DOM
 peer.on('open', (id) => {
+    console.log(id)
     document.getElementById("displayId").innerHTML = peer.id
 });
 
