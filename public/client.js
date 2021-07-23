@@ -1,5 +1,4 @@
 const socket = io();
-
 const message = document.getElementById("message"),
       handle = document.getElementById("handle"),
       output = document.getElementById("output"),
@@ -27,6 +26,9 @@ socket.on('userTyping', (data) => {
 });
 
 // get the local video and display it with PermissionStatus
+socket.on('user-connected', userId => {
+    console.log('user connected '+ userId);
+})
 const getLvideo = async () => {
     if(navigator.mediaDevices === undefined){
         navigator.mediaDevices = {}
@@ -46,10 +48,7 @@ const getLvideo = async () => {
             })
         }
     }
-    // navigator.mediaDevices.getUserMedia = navigator.getUserMedia || 
-    //                          navigator.webkitGetUserMedia || 
-    //                          navigator.mozGetUserMedia ||
-    //                          navigator.msGetUserMedia;
+
     let cfg = {
         audio:true,
         video:true
@@ -58,7 +57,10 @@ const getLvideo = async () => {
        navigator.mediaDevices.getUserMedia(cfg)
        .then((stream) => {
             window.localStraeam = stream;
-           recStream(stream, 'lVideo')
+            recStream(stream, 'lVideo');
+            // socket.on('user-connected', userId =>{
+            //     connectUser(userId, stream);
+            // })
        })
        .catch((err) => {
            alert('error, message : '+err);
@@ -69,6 +71,15 @@ const getLvideo = async () => {
         console.log(err);
     }
 }
+
+const connectUser = (userId, stream) => {
+    let call = peer.call(userId, stream);
+    call.on('stream', (stream) => {
+        window.peer_stream = stream;
+        recStream(stream, 'rVideo');
+    });
+}
+
 const recStream = (stream, elemid) => {
     let video = document.getElementById(elemid);
     
@@ -76,18 +87,8 @@ const recStream = (stream, elemid) => {
     
     window.peer_stream = stream;
 }
-getLvideo();
-// getLvideo({
-//     success: function(stream){
-//         window.localStraeam = stream;
-//         recStream(stream, 'lVideo');
-//     },   
-//     error: function(err){
-//         alert("cannot acces your camera");
-//         console.log(err)
-//     }
-// })
 
+getLvideo();
 
 let conn;
 let peer_id;
@@ -96,7 +97,8 @@ let peer_id;
 var peer = new Peer();
 // display then peer id on the DOM
 peer.on('open', (id) => {
-    console.log(id)
+    // console.log(id)
+    socket.emit('join-room', peer.id, id);
     document.getElementById("displayId").innerHTML = peer.id
 });
 
@@ -148,11 +150,10 @@ document.getElementById("call_button").addEventListener('click', () => {
     console.log(peer);
 
     let call = peer.call(peer_id, window.localStraeam);
-
     call.on('stream', (stream) => {
         window.peer_stream = stream;
         recStream(stream, 'rVideo');
-    })
+    });
 })
 // accept the call
 
